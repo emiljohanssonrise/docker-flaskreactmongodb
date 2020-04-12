@@ -1,0 +1,64 @@
+version: '3.7'
+
+services:
+
+    client:
+        build:
+            context: ./frontend
+            dockerfile: Dockerfile
+        tty: true
+        ports:
+            - "3000:3000"
+        volumes: 
+            - ./frontend:/app
+            - /app/node_modules
+        networks:
+            - frontend
+
+    mongodb:
+        image: mongo
+        container_name: mongo
+        restart: unless-stopped
+        command: mongod --auth
+        environment:
+            MONGO_INITDB_ROOT_USERNAME: "admin"
+            MONGO_INITDB_ROOT_PASSWORD: "password"
+            MONGO_INITDB_DATABASE: webapp
+            MONGODB_DATA_DIR: /data/db
+        volumes:
+        - mongodbdata:/data/db
+        networks:
+        - backend
+
+    api:
+        build: 
+            context: ./backend
+            dockerfile: Dockerfile
+        command: gunicorn --bind 0.0.0.0:5000 app:app
+        ports:
+            - "5000:5000"
+        environment:
+            APP_ENV: "prod"
+            APP_DEBUG: "False"
+            APP_PORT: 5000
+            MONGODB_HOST: mongodb
+            MONGODB_USERNAME: "apiuser"
+            MONGODB_PASSWORD: "apipassword"
+        volumes:
+            - appdata:/var/www/uploads
+        depends_on: 
+            - mongodb
+        networks:
+            - frontend
+            - backend
+
+networks:
+    frontend:
+        driver: bridge
+    backend:
+        driver: bridge
+volumes:
+    mongodbdata:
+        driver: local
+    appdata:
+        driver: local
