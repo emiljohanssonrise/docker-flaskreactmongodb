@@ -21,7 +21,7 @@ class Todo(db.Document):
     done = db.BooleanField(default=False)
     pub_date = db.DateTimeField(default=datetime.datetime.now)
 
-@app.route("/")
+@app.route("/api")
 def index():
     Todo.objects().delete()
     Todo(title="Simple todo A", text="12345678910").save()

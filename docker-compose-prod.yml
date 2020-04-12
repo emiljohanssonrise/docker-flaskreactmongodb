@@ -5,10 +5,9 @@ services:
     client:
         build:
             context: ./frontend
-            dockerfile: Dockerfile
-        tty: true
+            dockerfile: Dockerfile-prod
         ports:
-            - "3000:3000"
+            - "3000:80"
         volumes: 
             - ./frontend:/app
             - /app/node_modules
@@ -26,17 +25,17 @@ services:
             MONGO_INITDB_DATABASE: webapp
             MONGODB_DATA_DIR: /data/db
         volumes:
-        - mongodbdata:/data/db
+            - mongodbdata:/data/db
         networks:
-        - backend
+            - backend
 
     api:
         build: 
             context: ./backend
             dockerfile: Dockerfile
         command: gunicorn --bind 0.0.0.0:5000 app:app
-        ports:
-            - "5000:5000"
+        expose:
+            - 5000
         environment:
             MONGODB_HOST: mongodb
             MONGODB_USERNAME: "apiuser"
